@@ -1,162 +1,191 @@
 import 'package:flutter/material.dart';
 
+// Définition de la classe Task
+
 class Monfullwidget extends StatefulWidget {
   const Monfullwidget({super.key});
 
   @override
   State<Monfullwidget> createState() => _MonfullwidgetState();
 }
+class Task {
+  String title;
+  String status; // "En cours" ou "Expiré"
+  Task({required this.title, required this.status});
+}
+
 
 class _MonfullwidgetState extends State<Monfullwidget> {
-  final List<String> _tasks = [];
+  List<Task> tasks = [];
   final TextEditingController _controller = TextEditingController();
 
-  void _addTask() {
-    final text = _controller.text.trim();
-    if (text.isNotEmpty) {
-      setState(() {
-        _tasks.add(text);
-        _controller.clear();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Tâche "$text" ajoutée ✅'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+  void _addTask(String status) {
+    if (_controller.text.isEmpty) return;
+    setState(() {
+      tasks.add(Task(title: _controller.text, status: status));
+      _controller.clear();
+    });
   }
 
-  void _removeTask(int index) {
-    final removedTask = _tasks[index];
+  void _deleteTask(int index) {
     setState(() {
-      _tasks.removeAt(index);
+      tasks.removeAt(index);
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tâche "$removedTask" supprimée ❌'),
-        duration: const Duration(seconds: 2),
-      ),
+  }
+
+  void _showAddTaskDialog(String status) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text('Ajouter une tâche ($status)'),
+          content: TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              hintText: 'Titre de la tâche',
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _addTask(status);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10))),
+              child: Text('Ajouter'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          '📝 Gestion de Tâches',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: theme.colorScheme.primaryContainer,
-        foregroundColor: theme.colorScheme.onPrimaryContainer,
-        elevation: 4,
-        shadowColor: Colors.deepPurpleAccent.withOpacity(0.4),
+        title: Text('Gestion de Tâches'),
+        backgroundColor: Colors.deepPurpleAccent,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Champ d'ajout de tâche
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.deepPurple.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        labelText: 'Nouvelle tâche',
-                        border: InputBorder.none,
-                        prefixIcon: Icon(Icons.task_alt_rounded),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: _addTask,
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Ajouter'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurpleAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
+                  gradient: LinearGradient(
+                      colors: [Colors.deepPurpleAccent, Colors.purple])),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Liste des tâches
+            ListTile(
+              leading: Icon(Icons.dashboard),
+              title: Text('Dashboard'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: Icon(Icons.task),
+              title: Text('Tâches'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Paramètres'),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
+      body: Container(
+        color: Colors.grey[100],
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bienvenue dans le Dashboard',
+              style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87),
+            ),
+            SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildDashboardCard(
+                  title: 'Ajouter',
+                  icon: Icons.add_circle_outline,
+                  colors: [Colors.blueAccent, Colors.lightBlueAccent],
+                  onTap: () => _showAddTaskDialog('En cours'),
+                ),
+                _buildDashboardCard(
+                  title: 'En cours',
+                  icon: Icons.play_circle_fill,
+                  colors: [Colors.green, Colors.lightGreenAccent],
+                  onTap: () {},
+                  count: tasks.where((t) => t.status == 'En cours').length,
+                ),
+                _buildDashboardCard(
+                  title: 'Expiré',
+                  icon: Icons.timer_off,
+                  colors: [Colors.red, Colors.orangeAccent],
+                  onTap: () {},
+                  count: tasks.where((t) => t.status == 'Expiré').length,
+                ),
+              ],
+            ),
+            SizedBox(height: 30),
+            Text(
+              'Dernières tâches',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 10),
             Expanded(
-              child: _tasks.isEmpty
-                  ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.hourglass_empty_rounded,
-                      size: 80, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Aucune tâche pour le moment 😴',
-                    style:
-                    TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                ],
+              child: tasks.isEmpty
+                  ? Center(
+                child: Text(
+                  'Aucune tâche pour le moment',
+                  style: TextStyle(color: Colors.grey),
+                ),
               )
                   : ListView.builder(
-                itemCount: _tasks.length,
+                itemCount: tasks.length,
                 itemBuilder: (context, index) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.deepPurple.withOpacity(0.1),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
+                  final task = tasks[index];
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.deepPurpleAccent,
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                      leading: Icon(
+                        task.status == 'En cours'
+                            ? Icons.check_circle
+                            : Icons.error,
+                        color: task.status == 'En cours'
+                            ? Colors.green
+                            : Colors.red,
                       ),
-                      title: Text(
-                        _tasks[index],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
+                      title: Text(task.title,
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(task.status),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete_forever_rounded,
-                            color: Colors.redAccent),
-                        onPressed: () => _removeTask(index),
+                        icon: Icon(Icons.delete, color: Colors.grey[700]),
+                        onPressed: () => _deleteTask(index),
                       ),
                     ),
                   );
@@ -166,12 +195,61 @@ class _MonfullwidgetState extends State<Monfullwidget> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTask,
-        backgroundColor: Colors.deepPurpleAccent,
-        child: const Icon(Icons.add, color: Colors.white),
+    );
+  }
+
+  Widget _buildDashboardCard({
+    required String title,
+    required IconData icon,
+    required List<Color> colors,
+    required VoidCallback onTap,
+    int count = 0,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120,
+        height: 130,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: colors),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: colors.last.withOpacity(0.5),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Icon(icon, size: 50, color: Colors.white),
+                if (count > 0)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Text(
+                      '$count',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: 10),
+            Text(title,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 16)),
+          ],
+        ),
       ),
     );
   }
 }
-
