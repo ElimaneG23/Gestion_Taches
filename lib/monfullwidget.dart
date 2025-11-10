@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 
-// Définition de la classe Task
-
 class Monfullwidget extends StatefulWidget {
   const Monfullwidget({super.key});
 
   @override
   State<Monfullwidget> createState() => _MonfullwidgetState();
 }
+
+// Classe pour représenter une tâche
 class Task {
   String title;
-  String status; // "En cours" ou "Expiré"
+  String status;
   Task({required this.title, required this.status});
 }
 
-
 class _MonfullwidgetState extends State<Monfullwidget> {
+  // Liste de tâches
   List<Task> tasks = [];
+  // Contrôleur pour le champ de texte
   final TextEditingController _controller = TextEditingController();
 
+  // 👉 Méthode pour ajouter une tâche
   void _addTask(String status) {
     if (_controller.text.isEmpty) return;
     setState(() {
@@ -27,12 +29,7 @@ class _MonfullwidgetState extends State<Monfullwidget> {
     });
   }
 
-  void _deleteTask(int index) {
-    setState(() {
-      tasks.removeAt(index);
-    });
-  }
-
+  // 👉 Fenêtre d’ajout d’une tâche
   void _showAddTaskDialog(String status) {
     showDialog(
       context: context,
@@ -40,19 +37,19 @@ class _MonfullwidgetState extends State<Monfullwidget> {
         return AlertDialog(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Text('Ajouter une tâche ($status)'),
+          title: Text('Ajouter une tâche'),
           content: TextField(
             controller: _controller,
             decoration: InputDecoration(
               hintText: 'Titre de la tâche',
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)),
+              border:
+              OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Annuler'),
+              child: const Text('Annuler'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -60,9 +57,10 @@ class _MonfullwidgetState extends State<Monfullwidget> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
-              child: Text('Ajouter'),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Ajouter'),
             ),
           ],
         );
@@ -70,93 +68,107 @@ class _MonfullwidgetState extends State<Monfullwidget> {
     );
   }
 
+  // 👇 Interface principale
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gestion de Tâches'),
+        title: const Text('Gestion de Tâches'),
         backgroundColor: Colors.deepPurpleAccent,
         elevation: 0,
       ),
+
+      // 🧭 Menu latéral
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [Colors.deepPurpleAccent, Colors.purple])),
+                gradient: LinearGradient(
+                  colors: [Colors.deepPurpleAccent, Colors.purple],
+                ),
+              ),
               child: Text(
                 'Menu',
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.dashboard),
-              title: Text('Dashboard'),
+              leading: const Icon(Icons.dashboard),
+              title: const Text('Dashboard'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: Icon(Icons.task),
-              title: Text('Tâches'),
+              leading: const Icon(Icons.task),
+              title: const Text('Tâches'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Paramètres'),
+              leading: const Icon(Icons.settings),
+              title: const Text('Paramètres'),
               onTap: () => Navigator.pop(context),
             ),
           ],
         ),
       ),
+
+      // 🧱 Corps principal
       body: Container(
         color: Colors.grey[100],
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Bienvenue dans le Dashboard',
               style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
+
+            // 👉 Ligne des trois cartes
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                // 🔹 Seul ce bouton fonctionne (ajout de tâche)
                 _buildDashboardCard(
                   title: 'Ajouter',
                   icon: Icons.add_circle_outline,
                   colors: [Colors.blueAccent, Colors.lightBlueAccent],
                   onTap: () => _showAddTaskDialog('En cours'),
                 ),
+                // 🔸 Ces deux sont juste visuels
                 _buildDashboardCard(
                   title: 'En cours',
                   icon: Icons.play_circle_fill,
                   colors: [Colors.green, Colors.lightGreenAccent],
-                  onTap: () {},
-                  count: tasks.where((t) => t.status == 'En cours').length,
+                  onTap: () {}, // aucune action
                 ),
                 _buildDashboardCard(
                   title: 'Expiré',
                   icon: Icons.timer_off,
                   colors: [Colors.red, Colors.orangeAccent],
-                  onTap: () {},
-                  count: tasks.where((t) => t.status == 'Expiré').length,
+                  onTap: () {}, // aucune action
                 ),
               ],
             ),
-            SizedBox(height: 30),
-            Text(
+
+            const SizedBox(height: 30),
+
+            const Text(
               'Dernières tâches',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
+
+            // 👉 Liste des tâches
             Expanded(
               child: tasks.isEmpty
-                  ? Center(
+                  ? const Center(
                 child: Text(
                   'Aucune tâche pour le moment',
                   style: TextStyle(color: Colors.grey),
@@ -167,26 +179,17 @@ class _MonfullwidgetState extends State<Monfullwidget> {
                 itemBuilder: (context, index) {
                   final task = tasks[index];
                   return Card(
-                    margin: EdgeInsets.symmetric(vertical: 6),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15)),
                     child: ListTile(
-                      leading: Icon(
-                        task.status == 'En cours'
-                            ? Icons.check_circle
-                            : Icons.error,
-                        color: task.status == 'En cours'
-                            ? Colors.green
-                            : Colors.red,
-                      ),
+                      leading: const Icon(Icons.task_alt,
+                          color: Colors.deepPurple),
                       title: Text(task.title,
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold)),
                       subtitle: Text(task.status),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.grey[700]),
-                        onPressed: () => _deleteTask(index),
-                      ),
                     ),
                   );
                 },
@@ -198,12 +201,12 @@ class _MonfullwidgetState extends State<Monfullwidget> {
     );
   }
 
+  // 🔹 Widget pour créer les petites cartes du haut
   Widget _buildDashboardCard({
     required String title,
     required IconData icon,
     required List<Color> colors,
     required VoidCallback onTap,
-    int count = 0,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -215,38 +218,25 @@ class _MonfullwidgetState extends State<Monfullwidget> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: colors.last.withOpacity(0.5),
+              color: colors.last.withOpacity(0.4),
               blurRadius: 8,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Icon(icon, size: 50, color: Colors.white),
-                if (count > 0)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Text(
-                      '$count',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ),
-              ],
+            Icon(icon, size: 50, color: Colors.white),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 16,
+              ),
             ),
-            SizedBox(height: 10),
-            Text(title,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 16)),
           ],
         ),
       ),
